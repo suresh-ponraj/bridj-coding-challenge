@@ -10,6 +10,13 @@ describe ApplicationMailer, type: :mailer do
                      email: 'donald@disney.com',
                      seeding: true
   end
+  let(:jbird_traveler) do
+    Traveler.create! first_name: 'Mickey',
+                     last_name: 'Mouse',
+                     email: 'mickey@disney.com',
+                     seeding: true,
+                     registering_app: 'jbird'
+  end
   let(:origin) do
     Location.create! zone_id: zone.id,
                      name: '60 Bristol Street, Hill End, West End',
@@ -36,15 +43,25 @@ describe ApplicationMailer, type: :mailer do
     end
   end
 
+  let(:jbird_booking) do
+    Timecop.freeze(utc_booking_time) do
+      Booking.create! zone_id: zone.id,
+                      traveler_id: jbird_traveler.id,
+                      origin_id: origin.id,
+                      destination_id: destination.id,
+                      pickup_scheduled_at: utc_departure_time,
+                      dropoff_scheduled_at: utc_departure_time + 22.minutes,
+                      price: 3.0,
+                      seeding: true
+    end
+  end
+
   describe '.booking_success' do
     it 'sends a mandrill-mail with the correct variables' do
       Timecop.freeze(utc_booking_time) do
-        expect_any_instance_of(ApplicationMailer).to(
-          receive(:mandrill_mail)
-            .with(template: 'admin-booking-success-au',
-                  subject: 'Booking Confirmation',
-                  to: { email: traveler.email, name: traveler.first_name },
-                  vars: {
+        expect_any_instance_of(Email).to(
+          receive(:send_email)
+            .with(traveler, 'admin-booking-success-au', 'bridj_mailer.booking_success_subject', {
                     'FNAME' => traveler.first_name,
                     'LNAME' => traveler.last_name,
                     'ORIGIN' => origin.name,
@@ -53,11 +70,32 @@ describe ApplicationMailer, type: :mailer do
                     'TIME' => '14:30 AEST',
                     'BOOKING_DATE' => '23 Jan 2021 10:00 AEST',
                     'PAYMENT_METHOD' => 'Cash'
-                  },
-                  inline_css: true)
+                  }
+            )
         )
 
         ApplicationMailer.booking_success(traveler.id, booking.id, 1.5, 'AUD')
+      end
+    end
+
+    it 'sends a mandrill-mail with the correct variables using the jbird template and subject' do
+      Timecop.freeze(utc_booking_time) do
+        expect_any_instance_of(Email).to(
+          receive(:send_email)
+            .with(jbird_traveler, 'jbird-booking-confirmed-au', 'jbird_mailer.booking_success_subject', {
+                    'FNAME' => jbird_traveler.first_name,
+                    'LNAME' => jbird_traveler.last_name,
+                    'ORIGIN' => origin.name,
+                    'TRIP_PRICE' => '$1.50',
+                    'DATE' => 'Thu 28/01',
+                    'TIME' => '14:30 AEST',
+                    'BOOKING_DATE' => '23 Jan 2021 10:00 AEST',
+                    'PAYMENT_METHOD' => 'Cash'
+                  }
+            )
+        )
+
+        ApplicationMailer.booking_success(jbird_traveler.id, jbird_booking.id, 1.5, 'AUD')
       end
     end
 
@@ -72,16 +110,11 @@ describe ApplicationMailer, type: :mailer do
       it "formats payment method name for #{pm[:type]}" do
         booking.update!(payment_method: pm[:type])
 
-        expect_any_instance_of(ApplicationMailer).to(
-          receive(:mandrill_mail)
-            .with(
-              template: 'admin-booking-success-au',
-              subject: I18n.t('user_mailer.booking_success_subject'),
-              to: { email: traveler.email, name: traveler.first_name },
-              vars: hash_including(
+        expect_any_instance_of(Email).to(
+          receive(:send_email)
+            .with(traveler, 'admin-booking-success-au', 'bridj_mailer.booking_success_subject', hash_including(
                 'PAYMENT_METHOD' => pm[:display_name]
-              ),
-              inline_css: true
+              )
             )
         )
 
@@ -93,12 +126,9 @@ describe ApplicationMailer, type: :mailer do
   describe '.cancelled_booking' do
     it 'sends a mandrill-mail with the correct variables' do
       Timecop.freeze(utc_booking_time) do
-        expect_any_instance_of(ApplicationMailer).to(
-          receive(:mandrill_mail)
-            .with(template: 'admin-booking-cancel-au',
-                  subject: 'Booking Cancelled',
-                  to: { email: traveler.email, name: traveler.first_name },
-                  vars: {
+        expect_any_instance_of(Email).to(
+          receive(:send_email)
+            .with(traveler, 'admin-booking-cancel-au', 'bridj_mailer.cancelled_booking_subject', {
                     'FNAME' => traveler.first_name,
                     'LNAME' => traveler.last_name,
                     'ORIGIN' => origin.name,
@@ -106,27 +136,58 @@ describe ApplicationMailer, type: :mailer do
                     'DATE' => 'Thu 28/01',
                     'TIME' => '14:30 AEST',
                     'BOOKING_DATE' => '23 Jan 2021 10:00 AEST'
-                  },
-                  inline_css: true)
+                  }
+            )
         )
 
         ApplicationMailer.cancelled_booking(booking.id)
+      end
+    end
+
+    it 'sends a mandrill-mail with the correct variables using the jbird template and subject' do
+      Timecop.freeze(utc_booking_time) do
+        expect_any_instance_of(Email).to(
+          receive(:send_email)
+            .with(jbird_traveler, 'jbird-booking-cancelled-au', 'jbird_mailer.cancelled_booking_subject', {
+                    'FNAME' => jbird_traveler.first_name,
+                    'LNAME' => jbird_traveler.last_name,
+                    'ORIGIN' => origin.name,
+                    'TRIP_PRICE' => '$3.00',
+                    'DATE' => 'Thu 28/01',
+                    'TIME' => '14:30 AEST',
+                    'BOOKING_DATE' => '23 Jan 2021 10:00 AEST'
+                  }
+            )
+        )
+
+        ApplicationMailer.cancelled_booking(jbird_booking.id)
       end
     end
   end
 
   describe '.send_welcome_email' do
     it 'sends a mandrill mail with the correct variables' do
-      expect_any_instance_of(ApplicationMailer).to(
-        receive(:mandrill_mail)
-          .with(template: 'admin-welcome-email-au',
-                subject: I18n.t('user_mailer.send_welcome_email_subject'),
-                to: { email: traveler.email, name: traveler.first_name },
-                vars: { 'FNAME' => traveler.first_name },
-                inline_css: true)
+      expect_any_instance_of(Email).to(
+        receive(:send_email)
+          .with(traveler, 'admin-welcome-email-au', 'bridj_mailer.send_welcome_email_subject', { 
+            'FNAME' => traveler.first_name,
+            'LNAME' => traveler.last_name
+          })
       )
 
       ApplicationMailer.send_welcome_email(traveler.id)
+    end
+
+    it 'sends a mandrill mail with the correct variables using the jbird template and subject' do
+      expect_any_instance_of(Email).to(
+        receive(:send_email)
+          .with(jbird_traveler, 'jbird-welcome-au', 'jbird_mailer.send_welcome_email_subject', { 
+            'FNAME' => jbird_traveler.first_name,
+            'LNAME' => jbird_traveler.last_name
+          })
+      )
+
+      ApplicationMailer.send_welcome_email(jbird_traveler.id)
     end
   end
 end
