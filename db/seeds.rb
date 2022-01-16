@@ -20,7 +20,8 @@ locations = [
 traveler = Traveler.create! first_name: 'Donald',
                             last_name: 'Duck',
                             email: 'donald@disney.com',
-                            seeding: true
+                            seeding: true,
+                            registering_app: 'bridj'
 booking = Booking.create zone_id: zone.id,
                          traveler_id: traveler.id,
                          origin_id: locations[0].id,

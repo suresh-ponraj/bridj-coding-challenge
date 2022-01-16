@@ -4,11 +4,12 @@
 #
 # Table name: travelers
 #
-#  id         :integer          not null, primary key
-#  first_name :string           not null
-#  last_name  :string           not null
-#  created_at :datetime         not null
-#  updated_at :datetime         not null
+#  id               :integer          not null, primary key
+#  first_name       :string           not null
+#  last_name        :string           not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  registering_app  :string     default("bridj") not null
 #
 class Traveler < ApplicationRecord
   attr_accessor :seeding

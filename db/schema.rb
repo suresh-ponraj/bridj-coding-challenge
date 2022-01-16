@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_12_13_075400) do
+ActiveRecord::Schema.define(version: 2022_01_16_105955) do
 
   create_table "bookings", force: :cascade do |t|
     t.integer "zone_id", null: false
@@ -40,6 +40,7 @@ ActiveRecord::Schema.define(version: 2021_12_13_075400) do
     t.string "email", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "registering_app", default: "bridj", null: false
   end
 
   create_table "zones", force: :cascade do |t|
