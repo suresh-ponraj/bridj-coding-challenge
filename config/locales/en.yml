@@ -1,0 +1,13 @@
+en:
+  user_mailer:
+    send_welcome_email_subject: "Welcome to the Bridj family!"
+    booking_success_subject: "Booking Confirmation"
+    cancelled_booking_subject: "Booking Cancelled"
+  time:
+    formats:
+      admin_input: "%d/%m/%Y %H:%M"
+      admin_trip_stop_input: "%d/%m/%Y %H:%M:%S"
+      date_and_time: "%d %b %Y %H:%M %Z"
+      date_only: "%d/%m/%Y"
+      time_only: "%H:%M %Z"
+      trip_list: "%a %d/%m"
