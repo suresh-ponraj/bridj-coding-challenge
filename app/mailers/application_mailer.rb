@@ -32,7 +32,7 @@ class ApplicationMailer < MandrillMailer::TemplateMailer
       subject = 'jbird_mailer.booking_success_subject'
     else
       template = 'admin-booking-success-au'
-      subject = 'user_mailer.booking_success_subject'
+      subject = 'bridj_mailer.booking_success_subject'
     end
 
     mailer = Email.new()
@@ -52,7 +52,7 @@ class ApplicationMailer < MandrillMailer::TemplateMailer
       subject = 'jbird_mailer.send_welcome_email_subject'
     else
       template = 'admin-welcome-email-au'
-      subject = 'user_mailer.send_welcome_email_subject'
+      subject = 'bridj_mailer.send_welcome_email_subject'
     end
 
     mailer = Email.new()
@@ -87,7 +87,7 @@ class ApplicationMailer < MandrillMailer::TemplateMailer
       subject = 'jbird_mailer.cancelled_booking_subject'
     else
       template = 'admin-booking-cancel-au'
-      subject = 'user_mailer.cancelled_booking_subject'
+      subject = 'bridj_mailer.cancelled_booking_subject'
     end
 
     mailer = Email.new()

@@ -1,5 +1,5 @@
 en:
-  user_mailer:
+  bridj_mailer:
     send_welcome_email_subject: "Welcome to the Bridj family!"
     booking_success_subject: "Booking Confirmation"
     cancelled_booking_subject: "Booking Cancelled"
